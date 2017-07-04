@@ -16,7 +16,6 @@ public class DTResponse {
 	public void setAlerts(List<DTAlert> alerts) {
 		this.alerts = alerts;
 	}
-
 	
 	@Override
 	public String toString() {

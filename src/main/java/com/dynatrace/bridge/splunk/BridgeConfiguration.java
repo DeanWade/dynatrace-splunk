@@ -1,5 +1,7 @@
 package com.dynatrace.bridge.splunk;
 
+import java.util.Arrays;
+
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,9 +44,9 @@ public class BridgeConfiguration {
 	private String splunkSchema = "http";
 	
 	@Value("${splunk.host}")
-	private String splunkHost = "localhost";
+	private String splunkHost = "";
 	
-	public static String HOST = "localhost";
+	public static String HOST = "";
 	
 	@Value("${splunk.port}")
 	private long splunkPort = 8088;
@@ -53,13 +55,20 @@ public class BridgeConfiguration {
 	private String token = "";
 	
 	@Value("${splunk.index}")
-	private String index = "main";
-	public static String INDEX = "main";
+	private String index = "";
+	
+	public static String INDEX = "";
 	
 	@Value("${splunk.source}")
-	private String source = "dynatrace-splunk";
-	public static String SOURCE = "dynatrace-splunk";
+	private String source = "";
 	
+	public static String SOURCE = "";
+	
+	
+	@Value("${splunk.sourcetype}")
+	private String sourcetype = "_json";
+	
+	public static String SOURCETYPE = "_json";
 	
 	public String postUrlForSplunk(){
 		return splunkSchema + "://" + splunkHost + ":" + splunkPort + "/services/collector/event";
@@ -242,6 +251,22 @@ public class BridgeConfiguration {
 		this.source = source;
 		BridgeConfiguration.SOURCE = source;
 	}
-	
+
+	public String getSourcetype() {
+		return sourcetype;
+	}
+
+	public void setSourcetype(String sourcetype) {
+		this.sourcetype = sourcetype;
+	}
+
+	@Override
+	public String toString() {
+		return "BridgeConfiguration [dtSchema=" + dtSchema + ", dtHost=" + dtHost + ", dtPort=" + dtPort + ", username="
+				+ username + ", password=" + password + ", systemprofiles=" + Arrays.toString(systemprofiles)
+				+ ", interval=" + interval + ", splunkSchema=" + splunkSchema + ", splunkHost=" + splunkHost
+				+ ", splunkPort=" + splunkPort + ", token=" + token + ", index=" + index + ", source=" + source
+				+ ", sourcetype=" + sourcetype + "]";
+	}
 	
 }

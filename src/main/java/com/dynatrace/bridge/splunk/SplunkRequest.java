@@ -17,7 +17,7 @@ public class SplunkRequest {
 		request.time = System.currentTimeMillis();
 		request.host = BridgeConfiguration.HOST;
 		request.source = BridgeConfiguration.SOURCE;
-		request.sourcetype = "_json";
+		request.sourcetype = BridgeConfiguration.SOURCETYPE;
 		request.index = BridgeConfiguration.INDEX;
 		return request;
 	}
