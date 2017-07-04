@@ -1,7 +1,6 @@
 package com.dynatrace.bridge.splunk;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -25,50 +24,57 @@ public class BridgeWoker {
     private BridgeConfiguration bridgeConfiguration;
     
 	@Autowired
-	@Qualifier("restTemplateForDynatrace")
-	private RestTemplate restTemplateForDynatrace;
+	@Qualifier("restTemplateForAppMon")
+	private RestTemplate restTemplateForAppMon;
 	
 	@Autowired
 	@Qualifier("restTemplateForSplunk")
 	private RestTemplate restTemplateForSplunk;
+	
+	public void bridgeAlertTask() {
+		this.bridgeAlert(bridgeConfiguration.getInterval(), "m");
+	}
 
-    public void bridgeAlert() {
+    public void bridgeAlert(int last, String unit) {
     	
     	log.info("==================Task Start==================");
     	
-    	Date toDate = new Date(); 
-    	String toStr = sdf.format(toDate);//"2017-06-01T11:35:31.170+08:00";
+    	int timmeUnit = Calendar.MINUTE;
+    	if("h".equalsIgnoreCase(unit)){
+    		timmeUnit = Calendar.HOUR_OF_DAY;
+    	}else if("d".equalsIgnoreCase(unit)){
+    		timmeUnit = Calendar.DAY_OF_MONTH;
+    	}else if("m".equalsIgnoreCase(unit)){
+    		timmeUnit = Calendar.MINUTE;
+    	}
+    	if(last <=0){
+    		last = bridgeConfiguration.getInterval();
+    	}
+    	
     	Calendar calendar =Calendar.getInstance();
     	calendar.setTimeZone(TimeZone.getTimeZone("GMT+8"));
-    	calendar.setTime(toDate);
-    	calendar.add(Calendar.MINUTE, -bridgeConfiguration.getInterval());
+    	Date toDate = calendar.getTime(); 
+    	String toStr = sdf.format(toDate);//"2017-06-01T11:35:31.170+08:00";
+    	calendar.add(timmeUnit, 0-last);
     	Date fromDate = calendar.getTime();
     	String fromStr = sdf.format(fromDate);//"2017-07-01T11:35:31.170+08:00";
-    	log.info("==================" + fromStr);
-    	log.info("==================" + toStr);
     	
-		DTResponse dtResponse = restTemplateForDynatrace.getForObject(
-				bridgeConfiguration.getUrlForAlert() + "?from={from}&to={to}", DTResponse.class, fromStr, toStr);
-		
+    	log.info("==================From:" + fromStr);
+    	log.info("==================To  :" + toStr);
+    	
+		DTResponse dtResponse = restTemplateForAppMon.getForObject(bridgeConfiguration.getUrlForAlert() + "?from={from}&to={to}", DTResponse.class, fromStr, toStr);
 		List<DTAlert> alerts = dtResponse.getAlerts();
-		List<DTAlertDetail> alertDetails = new ArrayList<DTAlertDetail>(alerts.size());
 		for(DTAlert alert : alerts){
-			String alertId = alert.getId();
-			DTAlertDetail alertDetail = restTemplateForDynatrace.getForObject(
-					bridgeConfiguration.getUrlForAlert() + "/{id}", DTAlertDetail.class, alertId);
-			alertDetail.setId(alertId);
+			DTAlertDetail alertDetail = restTemplateForAppMon.getForObject(bridgeConfiguration.getUrlForAlert() + "/{id}", DTAlertDetail.class,  alert.getId());
+			alertDetail.setId( alert.getId());
 			if(isRequiredSystemProfile(alertDetail.getSystemprofile())){
-				alertDetails.add(alertDetail);
+				SplunkRequest splunkRequest = SplunkRequest.newInstance(alertDetail);
+				SplunkResponse splunkResponse = restTemplateForSplunk.postForObject(bridgeConfiguration.postUrlForSplunk(), splunkRequest, SplunkResponse.class);
+				if(log.isDebugEnabled()){
+					log.debug(splunkRequest.toString());
+					log.debug(splunkResponse.toString());
+				}
 			}
-		}
-		if(!alertDetails.isEmpty()){
-			SplunkRequest splunkRequest = SplunkRequest.newInstance();
-			splunkRequest.setEvent(alertDetails);
-			SplunkResponse splunkResponse = restTemplateForSplunk.postForObject(
-					bridgeConfiguration.postUrlForSplunk(), splunkRequest, SplunkResponse.class);
-			log.info(splunkResponse.toString());
-		}else{
-			log.info("no alert detected");
 		}
 		
 		log.info("==================Task End===================");
@@ -76,11 +82,11 @@ public class BridgeWoker {
     
     private boolean isRequiredSystemProfile(String systemProfile){
     	String[] systemProfiles = bridgeConfiguration.getSystemprofiles();
-    	if(systemProfiles == null){
+    	if(systemProfiles == null || systemProfiles.length == 0){
     		return true;
     	}
     	for(String systemProfile0 : systemProfiles){
-    		if(systemProfile0 != null && systemProfile0.equals(systemProfile)){
+    		if(systemProfile0 != null && systemProfile0.equalsIgnoreCase(systemProfile)){
     			return true;
     		}
     	}

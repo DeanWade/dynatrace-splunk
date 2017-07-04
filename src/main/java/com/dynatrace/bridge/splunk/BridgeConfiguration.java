@@ -78,7 +78,7 @@ public class BridgeConfiguration {
 		return dtSchema + "://" + dtHost + ":" + dtPort + "/api/v1/alerts";
 	}
 
-	@Bean("restTemplateForDynatrace")
+	@Bean("restTemplateForAppMon")
 	public RestTemplate restTemplateForDynatrace(RestTemplateBuilder restTemplateBuilder) throws Exception {
 		
 //	  	TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
@@ -124,7 +124,7 @@ public class BridgeConfiguration {
 	public MethodInvokingJobDetailFactoryBean scheduledTasks(BridgeWoker dataBridgeWoker) {
 		MethodInvokingJobDetailFactoryBean bean = new MethodInvokingJobDetailFactoryBean();
 		bean.setTargetObject(dataBridgeWoker);
-		bean.setTargetMethod("bridgeAlert");
+		bean.setTargetMethod("bridgeAlertTask");
 		bean.setConcurrent(false);
 		return bean;
 	}

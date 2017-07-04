@@ -9,9 +9,6 @@ public class SplunkRequest {
 	private String index;
 	private Object event;
 	
-	public SplunkRequest(){
-	}
-	
 	public static SplunkRequest newInstance(){
 		SplunkRequest request = new SplunkRequest();
 		request.time = System.currentTimeMillis();
@@ -19,6 +16,12 @@ public class SplunkRequest {
 		request.source = BridgeConfiguration.SOURCE;
 		request.sourcetype = BridgeConfiguration.SOURCETYPE;
 		request.index = BridgeConfiguration.INDEX;
+		return request;
+	}
+	
+	public static SplunkRequest newInstance(DTAlertDetail alertDetail){
+		SplunkRequest request = SplunkRequest.newInstance();
+		request.event = alertDetail;
 		return request;
 	}
 	
@@ -58,6 +61,11 @@ public class SplunkRequest {
 	public void setEvent(Object event) {
 		this.event = event;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "SplunkRequest [time=" + time + ", host=" + host + ", source=" + source + ", sourcetype=" + sourcetype
+				+ ", index=" + index + ", event=" + event + "]";
+	}
 	
 }
