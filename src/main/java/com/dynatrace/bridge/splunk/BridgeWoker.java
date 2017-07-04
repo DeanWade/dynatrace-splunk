@@ -69,9 +69,11 @@ public class BridgeWoker {
 			alertDetail.setId( alert.getId());
 			if(isRequiredSystemProfile(alertDetail.getSystemprofile())){
 				SplunkRequest splunkRequest = SplunkRequest.newInstance(alertDetail);
-				SplunkResponse splunkResponse = restTemplateForSplunk.postForObject(bridgeConfiguration.postUrlForSplunk(), splunkRequest, SplunkResponse.class);
 				if(log.isDebugEnabled()){
 					log.debug(splunkRequest.toString());
+				}
+				SplunkResponse splunkResponse = restTemplateForSplunk.postForObject(bridgeConfiguration.postUrlForSplunk(), splunkRequest, SplunkResponse.class);
+				if(log.isDebugEnabled()){
 					log.debug(splunkResponse.toString());
 				}
 			}
