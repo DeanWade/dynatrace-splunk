@@ -7,4 +7,4 @@ mvn clean install
 java -jar dynatrace-splunk-1.0.0.jar
 ```
 # configuration
-edit the property file: application.properties
+put the configuration file "application.properties" in the same directory as "dynatrace-splunk-1.0.0.jar", edit the property configruation.
